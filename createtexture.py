@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------------
+# Name:        CreateTexture
+# Purpose:
+#
+# Author:
+#
+# Created:     09/04/2014
+# Copyright:   (c)  2014
+# Licence:     <your licence>
+#-------------------------------------------------------------------------------
+import sys
+import random
+import Image
+import ImageDraw
+import ImageFont
+
+if __name__ == '__main__':
+    maxsize=300
+    minsize=1
+    num=10
+
+    for n in range(0, num):
+        w = random.randint(minsize, maxsize)
+        h = random.randint(minsize, maxsize)
+        r = random.randint(0, 255)
+        g = random.randint(0, 255)
+        b = random.randint(0, 255)
+        img = Image.new("RGB", (w, h), (r, g, b))
+
+        draw = ImageDraw.Draw(img)
+        x = w/2-2
+        y = h/2-4
+        draw.text((x+1, y+1), '%d'%n, (255, 255, 255))
+        draw.text((x+1, y-1), '%d'%n, (255, 255, 255))
+        draw.text((x-1, y+1), '%d'%n, (255, 255, 255))
+        draw.text((x-1, y-1), '%d'%n, (255, 255, 255))
+        draw.text((x, y), '%d'%n, (0, 0, 0))
+
+        img.save('%d.png'%n)
