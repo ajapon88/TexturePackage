@@ -9,6 +9,7 @@
 # Copyright:   (c)  2014
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
+import sys
 import Image
 
 class ImgPlace:
@@ -116,7 +117,7 @@ def imagesizecomp(a, b):
         return -1
     return 0
 
-def main(pakimglist):
+def texturepackage(pakimglist):
     imglist = []
     for imgname in pakimglist:
         imglist.append(Image.open(imgname))
@@ -140,4 +141,8 @@ def main(pakimglist):
     packtexture.exportTexture('export.png')
 
 if __name__ == '__main__':
-    main(['01.png', '02.png', '03.png'])
+    argv = sys.argv
+    argv.pop(0)
+    if (len(argv) > 0):
+        texturepackage(sys.argv)
+
