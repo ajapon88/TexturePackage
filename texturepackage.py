@@ -23,7 +23,7 @@ class ImgPlace:
 
     """ 点がテクスチャ内にあるかどうか """
     def isInPoint(self, x, y):
-        if (self.x < x and x < self.x+self.w and self.y < y and y < self.y+self.h ):
+        if (self.x <= x and x <= self.x+self.w-1 and self.y <= y and y <= self.y+self.h-1 ):
             return True
         return False
 
@@ -31,19 +31,19 @@ class ImgPlace:
     def isConflictPlace(self, place):
         if (self.isInPoint(place.x, place.y)):
             return True
-        if (self.isInPoint(place.x+place.w, place.y)):
+        if (self.isInPoint(place.x+place.w-1, place.y)):
             return True
-        if (self.isInPoint(place.x, place.y+place.h)):
+        if (self.isInPoint(place.x, place.y+place.h-1)):
             return True
-        if (self.isInPoint(place.x+place.w, place.y+place.h)):
+        if (self.isInPoint(place.x+place.w-1, place.y+place.h-1)):
             return True
         if (place.isInPoint(self.x, self.y)):
             return True
-        if (place.isInPoint(self.x+self.w, self.y)):
+        if (place.isInPoint(self.x+self.w-1, self.y)):
             return True
-        if (place.isInPoint(self.x, self.y+self.h)):
+        if (place.isInPoint(self.x, self.y+self.h-1)):
             return True
-        if (place.isInPoint(self.x+self.w, self.y+self.h)):
+        if (place.isInPoint(self.x+self.w-1, self.y+self.h-1)):
             return True
         return False
 
@@ -137,6 +137,7 @@ def texturepackage(pakimglist):
         if (not fill):
             packtexture.expendSpaceImage(imglist[0])
             imglist.pop(0)
+#        packtexture.exportTexture('export%d.png'%len(imglist))
 
     packtexture.exportTexture('export.png')
 
