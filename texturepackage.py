@@ -91,11 +91,14 @@ class PackTexture:
 
     """ テクスチャを拡張して追加 """
     def expendSpaceImage(self, image):
-        # とりあえず横に拡張して追加
-        self.images.append(ImgPlace(self.width, 0, image.size[0], image.size[1], image))
-        self.width += image.size[0]
-        self.height = max(self.height, image.size[1])
-
+        if self.height < self.width:
+            self.images.append(ImgPlace(0, self.height, image.size[0], image.size[1], image))
+            self.width = max(self.width, image.size[0])
+            self.height += image.size[1]
+        else:
+            self.images.append(ImgPlace(self.width, 0, image.size[0], image.size[1], image))
+            self.width += image.size[0]
+            self.height = max(self.height, image.size[1])
 
     """ テクスチャ生成 """
     def exportTexture(self, path):
