@@ -13,12 +13,15 @@ import sys
 import Image
 
 class ImgPlace:
+    NOROTATE = 0
+    ROTATE = 1
     """ コンストラクタ """
-    def __init__(self, x, y, w, h, img=None):
+    def __init__(self, x, y, w, h, r=NOROTATE, img=None):
         self.x = x
         self.y = y
         self.w = w
         self.h = h
+        self.r = r
         self.img = img
 
     """ 点がテクスチャ内にあるかどうか """
@@ -53,21 +56,23 @@ class PackTexture:
     def fillSpaceImage(self, image):
         # 追加済みテクスチャの左下、右下、右上を起点としてテクスチャを置く
         for packimg in self.images:
-            x = packimg.x+packimg.w
-            y = packimg.y
-            if (self.fitImageTest(x, y, image.size[0], image.size[1])):
-                self.images.append(ImgPlace(x, y, image.size[0], image.size[1], image))
-                return True
-            x = packimg.x
-            y = packimg.y+packimg.h
-            if (self.fitImageTest(x, y, image.size[0], image.size[1])):
-                self.images.append(ImgPlace(x, y, image.size[0], image.size[1], image))
-                return True
-            x = packimg.x+packimg.w
-            y = packimg.y+packimg.h
-            if (self.fitImageTest(x, y, image.size[0], image.size[1])):
-                self.images.append(ImgPlace(x, y, image.size[0], image.size[1], image))
-                return True
+            places = [
+                ImgPlace(packimg.x+packimg.w, packimg.y, image.size[0], image.size[1], ImgPlace.NOROTATE),
+                ImgPlace(packimg.x, packimg.y+packimg.h, image.size[0], image.size[1], ImgPlace.NOROTATE),
+                ImgPlace(packimg.x+packimg.w, packimg.y+packimg.h, image.size[0], image.size[1], ImgPlace.NOROTATE),
+
+                ImgPlace(packimg.x+packimg.w, packimg.y, image.size[1], image.size[0], ImgPlace.ROTATE),
+                ImgPlace(packimg.x, packimg.y+packimg.h, image.size[1], image.size[0], ImgPlace.ROTATE),
+                ImgPlace(packimg.x+packimg.w, packimg.y+packimg.h, image.size[1], image.size[0], ImgPlace.ROTATE),
+            ]
+            for p in places:
+                if (self.fitImageTest(p.x, p.y, p.w, p.h)):
+                    if (p.r == ImgPlace.ROTATE):
+                        p.img = image.transpose(Image.ROTATE_90)
+                    else:
+                        p.img = image
+                    self.images.append(p)
+                    return True
         return False
 
     """ はめ込みテスト """
@@ -85,13 +90,27 @@ class PackTexture:
     """ テクスチャを拡張して追加 """
     def expendSpaceImage(self, image):
         if self.height < self.width:
-            self.images.append(ImgPlace(0, self.height, image.size[0], image.size[1], image))
-            self.width = max(self.width, image.size[0])
-            self.height += image.size[1]
+            x = 0
+            y = self.height
+            w = max(self.width, image.size[0])
+            h = self.height + image.size[1]
+            rw = max(self.width, image.size[1])
+            rh = self.height + image.size[0]
         else:
-            self.images.append(ImgPlace(self.width, 0, image.size[0], image.size[1], image))
-            self.width += image.size[0]
-            self.height = max(self.height, image.size[1])
+            x = self.width
+            y = 0
+            w = self.width + image.size[0]
+            h = max(self.height, image.size[1])
+            rw = self.width + image.size[1]
+            rh = max(self.height, image.size[0])
+        if (rw*rh > w*h):
+            self.images.append(ImgPlace(x, y, image.size[0], image.size[1], ImgPlace.NOROTATE, image))
+            self.width = w
+            self.height = h
+        else:
+            self.images.append(ImgPlace(x, y, image.size[1], image.size[0], ImgPlace.ROTATE, image.transpose(Image.ROTATE_90)))
+            self.width = rw
+            self.height = rh
 
     """ テクスチャ生成 """
     def exportTexture(self, path):
