@@ -57,10 +57,11 @@ class PackTexture:
         # 追加済みテクスチャの左下、右下、右上を起点としてテクスチャを置く
         for packimg in self.images:
             places = [
+                # 無回転
                 ImgPlace(packimg.x+packimg.w, packimg.y, image.size[0], image.size[1], ImgPlace.NOROTATE),
                 ImgPlace(packimg.x, packimg.y+packimg.h, image.size[0], image.size[1], ImgPlace.NOROTATE),
                 ImgPlace(packimg.x+packimg.w, packimg.y+packimg.h, image.size[0], image.size[1], ImgPlace.NOROTATE),
-
+                # 回転
                 ImgPlace(packimg.x+packimg.w, packimg.y, image.size[1], image.size[0], ImgPlace.ROTATE),
                 ImgPlace(packimg.x, packimg.y+packimg.h, image.size[1], image.size[0], ImgPlace.ROTATE),
                 ImgPlace(packimg.x+packimg.w, packimg.y+packimg.h, image.size[1], image.size[0], ImgPlace.ROTATE),
@@ -103,7 +104,7 @@ class PackTexture:
             h = max(self.height, image.size[1])
             rw = self.width + image.size[1]
             rh = max(self.height, image.size[0])
-        if (rw*rh > w*h):
+        if (rw*rh >= w*h):
             self.images.append(ImgPlace(x, y, image.size[0], image.size[1], ImgPlace.NOROTATE, image))
             self.width = w
             self.height = h
