@@ -10,6 +10,7 @@
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
 import sys
+import time
 import glob
 import Image
 
@@ -180,7 +181,9 @@ if __name__ == '__main__':
             exit(1)
         print 'Input %d files.' % len(files)
         if (open(output, 'w')):
+            t0 = time.time()
             texturepackage(files, output)
+            print 'Process time:%ssec' % round(time.time()-t0, 3)
         else:
             print 'Output file open error. \'%s\'' % output
             exit(1)
