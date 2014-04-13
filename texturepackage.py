@@ -10,6 +10,7 @@
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
 import sys
+import glob
 import Image
 
 class ImgPlace:
@@ -133,11 +134,15 @@ def imagesizecomp(a, b):
         return -1
     return 0
 
-def texturepackage(pakimglist):
+def texturepackage(pakimglist, output):
     imglist = []
     for imgname in pakimglist:
-        imglist.append(Image.open(imgname))
-
+        try:
+            img = Image.open(imgname)
+            if img:
+                imglist.append(img)
+        except:
+            print 'Image open error. \'%s \'' % imgname
     # 大きい順にソート
     imglist.sort(cmp=imagesizecomp)
 
@@ -155,11 +160,25 @@ def texturepackage(pakimglist):
             imglist.pop(0)
 #        packtexture.exportTexture('export%d.png'%len(imglist))
 
-    packtexture.exportTexture('export.png')
+    packtexture.exportTexture(output)
+
+def usage():
+    print 'usage: %s image_files... output' % sys.argv[0]
 
 if __name__ == '__main__':
     argv = sys.argv
     argv.pop(0)
-    if (len(argv) > 0):
-        texturepackage(sys.argv)
+    argc = len(argv)
+    if (argc > 1):
+        output = argv[argc-1]
+        argv.pop(argc-1)
+        files = []
+        for f in argv:
+            files += glob.glob(f)
+        if (open(output, 'w')):
+            texturepackage(files, output)
+        else:
+            print 'output file open error. \'%s\'' % output
+    else:
+        usage()
 

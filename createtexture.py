@@ -10,6 +10,7 @@
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
 import sys
+import os
 import random
 import Image
 import ImageDraw
@@ -20,6 +21,11 @@ if __name__ == '__main__':
     minsize=10
     num=10
 
+    output_dir = 'Images'
+
+    if (not os.path.isdir(output_dir)):
+        os.mkdir(output_dir)
+    os.chdir(output_dir)
     for n in range(0, num):
         w = random.randint(minsize, maxsize)
         h = random.randint(minsize, maxsize)
