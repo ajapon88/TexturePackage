@@ -17,7 +17,7 @@ import ImageFont
 
 if __name__ == '__main__':
     maxsize=300
-    minsize=1
+    minsize=10
     num=10
 
     for n in range(0, num):

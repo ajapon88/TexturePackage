@@ -29,23 +29,16 @@ class ImgPlace:
 
     """ テクスチャがかぶっているかどうか """
     def isConflictPlace(self, place):
-        if (self.isInPoint(place.x, place.y)):
-            return True
-        if (self.isInPoint(place.x+place.w-1, place.y)):
-            return True
-        if (self.isInPoint(place.x, place.y+place.h-1)):
-            return True
-        if (self.isInPoint(place.x+place.w-1, place.y+place.h-1)):
-            return True
-        if (place.isInPoint(self.x, self.y)):
-            return True
-        if (place.isInPoint(self.x+self.w-1, self.y)):
-            return True
-        if (place.isInPoint(self.x, self.y+self.h-1)):
-            return True
-        if (place.isInPoint(self.x+self.w-1, self.y+self.h-1)):
-            return True
-        return False
+        # 範囲外かどうかで判定
+        if (place.x+place.w-1 < self.x):
+            return False
+        if (self.x+self.w-1 < place.x):
+            return False
+        if (place.y+place.h-1 < self.y):
+            return False
+        if (self.y+self.h-1 < place.y):
+            return False
+        return True
 
 
 class PackTexture:
