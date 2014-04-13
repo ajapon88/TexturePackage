@@ -10,10 +10,13 @@
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
 import sys
+import os.path
 import time
 import glob
 import Image
+import xml.dom.minidom
 
+""" テクスチャ配置クラス """
 class ImgPlace:
     NOROTATE = 0
     ROTATE = 1
@@ -46,6 +49,7 @@ class ImgPlace:
         return True
 
 
+""" テクスチャパッククラス """
 class PackTexture:
     """ コンストラクタ """
     def __init__(self):
@@ -124,9 +128,129 @@ class PackTexture:
             img.paste(packimg.img, (packimg.x, packimg.y))
         img.save(path)
 
+    """ テクスチャDict作成 """
+    def createTextureInfoDict(self, imgplace):
+        doc = xml.dom.minidom.Document()
+        dict = doc.createElement('dict')
+        # frame
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('frame'))
+        data = doc.createElement('string')
+        data.appendChild(doc.createTextNode('{{%d,%d},{%d,%d}'%(imgplace.x,imgplace.y,imgplace.w,imgplace.h)))
+        dict.appendChild(key)
+        dict.appendChild(data)
+        # offset
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('offset'))
+        data = doc.createElement('string')
+        data.appendChild(doc.createTextNode('{0,0}'))
+        dict.appendChild(key)
+        dict.appendChild(data)
+        # rotated
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('rotated'))
+        if (imgplace.r == ImgPlace.ROTATE):
+            data = doc.createElement('true')
+        else:
+            data = doc.createElement('false')
+        dict.appendChild(key)
+        dict.appendChild(data)
+        """
+        # よくわからないので保留
+        # sourceColorRect
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('sourceColorRect'))
+        data = doc.createElement('string')
+        data.appendChild(doc.createTextNode('{{0,0},{0,0}}'))
+        dict.appendChild(key)
+        dict.appendChild(data)
+        """
+        # offset
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('sourceSize'))
+        data = doc.createElement('string')
+        data.appendChild(doc.createTextNode('{%d,%d}'%(imgplace.w, imgplace.h)))
+        dict.appendChild(key)
+        dict.appendChild(data)
+
+        return dict
+
+    """ Metadata Dict作成 """
+    def createMetadataDict(self, texturename):
+        doc = xml.dom.minidom.Document()
+        dict = doc.createElement('dict')
+        # format
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('format'))
+        data = doc.createElement('integer')
+        data.appendChild(doc.createTextNode('2'))
+        dict.appendChild(key)
+        dict.appendChild(data)
+        # realTextureFileName
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('realTextureFileName'))
+        data = doc.createElement('string')
+        data.appendChild(doc.createTextNode(texturename))
+        dict.appendChild(key)
+        dict.appendChild(data)
+        # size
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('size'))
+        data = doc.createElement('string')
+        data.appendChild(doc.createTextNode('{%d,%d}'%(self.width,self.height)))
+        dict.appendChild(key)
+        dict.appendChild(data)
+        # smartupdate
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('smartupdate'))
+        data = doc.createElement('string')
+        data.appendChild(doc.createTextNode(''))
+        dict.appendChild(key)
+        dict.appendChild(data)
+        # textureFileName
+        key = doc.createElement('key')
+        key.appendChild(doc.createTextNode('textureFileName'))
+        data = doc.createElement('string')
+        data.appendChild(doc.createTextNode(texturename))
+        dict.appendChild(key)
+        dict.appendChild(data)
+
+        return dict
+
+
+    """ plist作成 """
+    def exportPlist(self, texturepath):
+        texturename = os.path.basename(texturepath)
+        texturenameroot, ext = os.path.splitext(texturename)
+        plistname = os.path.dirname(texturepath) + texturenameroot + '.plist'
+        doc = xml.dom.minidom.Document()
+        root = doc.createElement('plist')
+        root.setAttribute('version', '1.0')
+        doc.appendChild(root)
+        rootdict = doc.createElement('dict')
+        root.appendChild(rootdict)
+        frame_key = doc.createElement('key')
+        frame_key.appendChild(doc.createTextNode('frames'))
+        frames = doc.createElement('dict')
+        rootdict.appendChild(frame_key)
+        rootdict.appendChild(frames)
+        for packimg in self.images:
+            key = doc.createElement('key')
+            key.appendChild(doc.createTextNode('filename'))
+            frames.appendChild(key)
+            frames.appendChild(self.createTextureInfoDict(packimg))
+        metadata_key = doc.createElement('key')
+        metadata_key.appendChild(doc.createTextNode('metadata'))
+        rootdict.appendChild(metadata_key)
+        rootdict.appendChild(self.createMetadataDict(texturename))
+
+        f = open(plistname, 'w')
+        f.write(doc.toprettyxml('    ', '\n', 'utf-8'))
+        f.close()
+
 
 """ テクスチャサイズソート """
-def imagesizecomp(a, b):
+def lessImageSize(a, b):
     asize = a.size[0]*a.size[1]
     bsize = b.size[0]*b.size[1]
     if (asize < bsize):
@@ -135,17 +259,19 @@ def imagesizecomp(a, b):
         return -1
     return 0
 
+""" テクスチャパック """
 def texturepackage(pakimglist, output):
     imglist = []
     for imgname in pakimglist:
         try:
             img = Image.open(imgname)
             if img:
+                img.filename = imgname
                 imglist.append(img)
         except:
             print 'Image open error. \'%s \'' % imgname
     # 大きい順にソート
-    imglist.sort(cmp=imagesizecomp)
+    imglist.sort(cmp=lessImageSize)
 
     # 追加
     packtexture = PackTexture()
@@ -162,7 +288,9 @@ def texturepackage(pakimglist, output):
 #        packtexture.exportTexture('export%d.png'%len(imglist))
 
     packtexture.exportTexture(output)
+    packtexture.exportPlist(output)
 
+""" usage """
 def usage():
     print 'usage: %s image_files... output' % sys.argv[0]
 
