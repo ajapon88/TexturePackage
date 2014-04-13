@@ -59,12 +59,12 @@ class PackTexture:
         for packimg in self.images:
             places = [
                 # 無回転
-                ImgPlace(packimg.x+packimg.w, packimg.y, image.size[0], image.size[1], ImgPlace.NOROTATE),
-                ImgPlace(packimg.x, packimg.y+packimg.h, image.size[0], image.size[1], ImgPlace.NOROTATE),
+                ImgPlace(packimg.x+packimg.w, packimg.y,           image.size[0], image.size[1], ImgPlace.NOROTATE),
+                ImgPlace(packimg.x,           packimg.y+packimg.h, image.size[0], image.size[1], ImgPlace.NOROTATE),
                 ImgPlace(packimg.x+packimg.w, packimg.y+packimg.h, image.size[0], image.size[1], ImgPlace.NOROTATE),
                 # 回転
-                ImgPlace(packimg.x+packimg.w, packimg.y, image.size[1], image.size[0], ImgPlace.ROTATE),
-                ImgPlace(packimg.x, packimg.y+packimg.h, image.size[1], image.size[0], ImgPlace.ROTATE),
+                ImgPlace(packimg.x+packimg.w, packimg.y,           image.size[1], image.size[0], ImgPlace.ROTATE),
+                ImgPlace(packimg.x,           packimg.y+packimg.h, image.size[1], image.size[0], ImgPlace.ROTATE),
                 ImgPlace(packimg.x+packimg.w, packimg.y+packimg.h, image.size[1], image.size[0], ImgPlace.ROTATE),
             ]
             for p in places:
@@ -175,10 +175,15 @@ if __name__ == '__main__':
         files = []
         for f in argv:
             files += glob.glob(f)
+        if (len(files) <= 0):
+            print 'No input files.'
+            exit(1)
+        print 'Input %d files.' % len(files)
         if (open(output, 'w')):
             texturepackage(files, output)
         else:
-            print 'output file open error. \'%s\'' % output
+            print 'Output file open error. \'%s\'' % output
+            exit(1)
     else:
         usage()
 
