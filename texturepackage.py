@@ -76,6 +76,7 @@ class PackTexture:
                 if (self.fitImageTest(p.x, p.y, p.w, p.h)):
                     if (p.r == ImgPlace.ROTATE):
                         p.img = image.transpose(Image.ROTATE_90)
+                        p.img.filename = image.filename
                     else:
                         p.img = image
                     self.images.append(p)
@@ -115,7 +116,9 @@ class PackTexture:
             self.width = w
             self.height = h
         else:
-            self.images.append(ImgPlace(x, y, image.size[1], image.size[0], ImgPlace.ROTATE, image.transpose(Image.ROTATE_90)))
+            rotimg = image.transpose(Image.ROTATE_90)
+            rotimg.filename = image.filename
+            self.images.append(ImgPlace(x, y, image.size[1], image.size[0], ImgPlace.ROTATE, rotimg))
             self.width = rw
             self.height = rh
 
@@ -136,7 +139,7 @@ class PackTexture:
         key = doc.createElement('key')
         key.appendChild(doc.createTextNode('frame'))
         data = doc.createElement('string')
-        data.appendChild(doc.createTextNode('{{%d,%d},{%d,%d}'%(imgplace.x,imgplace.y,imgplace.w,imgplace.h)))
+        data.appendChild(doc.createTextNode('{{%d,%d},{%d,%d}}'%(imgplace.x,imgplace.y,imgplace.w,imgplace.h)))
         dict.appendChild(key)
         dict.appendChild(data)
         # offset
@@ -155,9 +158,9 @@ class PackTexture:
             data = doc.createElement('false')
         dict.appendChild(key)
         dict.appendChild(data)
-        """
-        # よくわからないので保留
         # sourceColorRect
+        # よくわからないので保留
+        """
         key = doc.createElement('key')
         key.appendChild(doc.createTextNode('sourceColorRect'))
         data = doc.createElement('string')
@@ -180,6 +183,7 @@ class PackTexture:
         doc = xml.dom.minidom.Document()
         dict = doc.createElement('dict')
         # format
+        # 2にのみ対応
         key = doc.createElement('key')
         key.appendChild(doc.createTextNode('format'))
         data = doc.createElement('integer')
@@ -201,12 +205,14 @@ class PackTexture:
         dict.appendChild(key)
         dict.appendChild(data)
         # smartupdate
+        """
         key = doc.createElement('key')
         key.appendChild(doc.createTextNode('smartupdate'))
         data = doc.createElement('string')
         data.appendChild(doc.createTextNode(''))
         dict.appendChild(key)
         dict.appendChild(data)
+        """
         # textureFileName
         key = doc.createElement('key')
         key.appendChild(doc.createTextNode('textureFileName'))
@@ -236,7 +242,7 @@ class PackTexture:
         rootdict.appendChild(frames)
         for packimg in self.images:
             key = doc.createElement('key')
-            key.appendChild(doc.createTextNode('filename'))
+            key.appendChild(doc.createTextNode(packimg.img.filename))
             frames.appendChild(key)
             frames.appendChild(self.createTextureInfoDict(packimg))
         metadata_key = doc.createElement('key')
@@ -266,7 +272,8 @@ def texturepackage(pakimglist, output):
         try:
             img = Image.open(imgname)
             if img:
-                img.filename = imgname
+                # ひとまずファイル名を無理やり持たせる
+                img.filename = os.path.basename(imgname)
                 imglist.append(img)
         except:
             print 'Image open error. \'%s \'' % imgname
