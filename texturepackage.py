@@ -131,50 +131,43 @@ class PackTexture:
             img.paste(packimg.img, (packimg.x, packimg.y))
         img.save(path)
 
+    """ Key-Data追加 """
+    def addElemKeyData(self, elem, key, data, value=None):
+        doc = xml.dom.minidom.Document()
+        elem_key = doc.createElement('key')
+        elem_key.appendChild(doc.createTextNode(key))
+        elem_data = doc.createElement(data)
+        if (value is not None):
+            elem_data.appendChild(doc.createTextNode(value))
+        elem.appendChild(elem_key)
+        elem.appendChild(elem_data)
+
+    """ Key-Element追加 """
+    def addElemKeyElement(self, elem, key, data):
+        doc = xml.dom.minidom.Document()
+        elem_key = doc.createElement('key')
+        elem_key.appendChild(doc.createTextNode(key))
+        elem.appendChild(elem_key)
+        elem.appendChild(data)
+
     """ テクスチャDict作成 """
     def createTextureInfoDict(self, imgplace):
         doc = xml.dom.minidom.Document()
         dict = doc.createElement('dict')
         # frame
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('frame'))
-        data = doc.createElement('string')
-        data.appendChild(doc.createTextNode('{{%d,%d},{%d,%d}}'%(imgplace.x,imgplace.y,imgplace.w,imgplace.h)))
-        dict.appendChild(key)
-        dict.appendChild(data)
+        self.addElemKeyData(dict, 'frame', 'string', '{{%d,%d},{%d,%d}}'%(imgplace.x,imgplace.y,imgplace.w,imgplace.h))
         # offset
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('offset'))
-        data = doc.createElement('string')
-        data.appendChild(doc.createTextNode('{0,0}'))
-        dict.appendChild(key)
-        dict.appendChild(data)
+        self.addElemKeyData(dict, 'offset', 'string', '{0,0}')
         # rotated
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('rotated'))
         if (imgplace.r == ImgPlace.ROTATE):
-            data = doc.createElement('true')
+            self.addElemKeyData(dict, 'rotated', 'true')
         else:
-            data = doc.createElement('false')
-        dict.appendChild(key)
-        dict.appendChild(data)
+            self.addElemKeyData(dict, 'rotated', 'false')
         # sourceColorRect
         # よくわからないので保留
-        """
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('sourceColorRect'))
-        data = doc.createElement('string')
-        data.appendChild(doc.createTextNode('{{0,0},{0,0}}'))
-        dict.appendChild(key)
-        dict.appendChild(data)
-        """
-        # offset
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('sourceSize'))
-        data = doc.createElement('string')
-        data.appendChild(doc.createTextNode('{%d,%d}'%(imgplace.w, imgplace.h)))
-        dict.appendChild(key)
-        dict.appendChild(data)
+        # self.addElemKeyData(dict, 'sourceColorRect', 'string', '{{0,0},{0,0}}')
+        # sourceSize
+        self.addElemKeyData(dict, 'sourceSize', 'string', '{%d,%d}'%(imgplace.w, imgplace.h))
 
         return dict
 
@@ -184,42 +177,17 @@ class PackTexture:
         dict = doc.createElement('dict')
         # format
         # 2にのみ対応
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('format'))
-        data = doc.createElement('integer')
-        data.appendChild(doc.createTextNode('2'))
-        dict.appendChild(key)
-        dict.appendChild(data)
+        self.addElemKeyData(dict, 'format', 'integer', '2')
         # realTextureFileName
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('realTextureFileName'))
-        data = doc.createElement('string')
-        data.appendChild(doc.createTextNode(texturename))
-        dict.appendChild(key)
-        dict.appendChild(data)
+        self.addElemKeyData(dict, 'realTextureFileName', 'string', texturename)
         # size
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('size'))
-        data = doc.createElement('string')
-        data.appendChild(doc.createTextNode('{%d,%d}'%(self.width,self.height)))
-        dict.appendChild(key)
-        dict.appendChild(data)
+        self.addElemKeyData(dict, 'size', 'string', '{%d,%d}'%(self.width,self.height))
         # smartupdate
         """
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('smartupdate'))
-        data = doc.createElement('string')
-        data.appendChild(doc.createTextNode(''))
-        dict.appendChild(key)
-        dict.appendChild(data)
+        self.addElemKeyData(dict, 'smartupdate', 'string', '')
         """
         # textureFileName
-        key = doc.createElement('key')
-        key.appendChild(doc.createTextNode('textureFileName'))
-        data = doc.createElement('string')
-        data.appendChild(doc.createTextNode(texturename))
-        dict.appendChild(key)
-        dict.appendChild(data)
+        self.addElemKeyData(dict, 'textureFileName', 'string', texturename)
 
         return dict
 
@@ -229,26 +197,21 @@ class PackTexture:
         texturename = os.path.basename(texturepath)
         texturenameroot, ext = os.path.splitext(texturename)
         plistname = os.path.dirname(texturepath) + texturenameroot + '.plist'
+
         doc = xml.dom.minidom.Document()
-        root = doc.createElement('plist')
-        root.setAttribute('version', '1.0')
-        doc.appendChild(root)
+
+        plist = doc.createElement('plist')
+        plist.setAttribute('version', '1.0')
+        doc.appendChild(plist)
+
         rootdict = doc.createElement('dict')
-        root.appendChild(rootdict)
-        frame_key = doc.createElement('key')
-        frame_key.appendChild(doc.createTextNode('frames'))
+        plist.appendChild(rootdict)
+
         frames = doc.createElement('dict')
-        rootdict.appendChild(frame_key)
-        rootdict.appendChild(frames)
         for packimg in self.images:
-            key = doc.createElement('key')
-            key.appendChild(doc.createTextNode(packimg.img.filename))
-            frames.appendChild(key)
-            frames.appendChild(self.createTextureInfoDict(packimg))
-        metadata_key = doc.createElement('key')
-        metadata_key.appendChild(doc.createTextNode('metadata'))
-        rootdict.appendChild(metadata_key)
-        rootdict.appendChild(self.createMetadataDict(texturename))
+            self.addElemKeyElement(frames, packimg.img.filename, self.createTextureInfoDict(packimg))
+        self.addElemKeyElement(rootdict, 'frames', frames)
+        self.addElemKeyElement(rootdict, 'metadata', self.createMetadataDict(texturename))
 
         f = open(plistname, 'w')
         f.write(doc.toprettyxml('    ', '\n', 'utf-8'))
