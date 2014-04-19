@@ -75,7 +75,7 @@ class PackTexture:
             for p in places:
                 if (self.fitImageTest(p.x, p.y, p.w, p.h)):
                     if (p.r == ImgPlace.ROTATE):
-                        p.img = image.transpose(Image.ROTATE_90)
+                        p.img = image.transpose(Image.ROTATE_270)
                         p.img.filename = image.filename
                     else:
                         p.img = image
@@ -116,7 +116,7 @@ class PackTexture:
             self.width = w
             self.height = h
         else:
-            rotimg = image.transpose(Image.ROTATE_90)
+            rotimg = image.transpose(Image.ROTATE_270)
             rotimg.filename = image.filename
             self.images.append(ImgPlace(x, y, image.size[1], image.size[0], ImgPlace.ROTATE, rotimg))
             self.width = rw
@@ -155,7 +155,10 @@ class PackTexture:
         doc = xml.dom.minidom.Document()
         dict = doc.createElement('dict')
         # frame
-        self.addElemKeyData(dict, 'frame', 'string', '{{%d,%d},{%d,%d}}'%(imgplace.x,imgplace.y,imgplace.w,imgplace.h))
+        if (imgplace.r == ImgPlace.ROTATE):
+            self.addElemKeyData(dict, 'frame', 'string', '{{%d,%d},{%d,%d}}'%(imgplace.x,imgplace.y,imgplace.h,imgplace.w))
+        else:
+            self.addElemKeyData(dict, 'frame', 'string', '{{%d,%d},{%d,%d}}'%(imgplace.x,imgplace.y,imgplace.w,imgplace.h))
         # offset
         self.addElemKeyData(dict, 'offset', 'string', '{0,0}')
         # rotated
