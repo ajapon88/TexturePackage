@@ -199,7 +199,7 @@ class PackTexture:
     def exportPlist(self, texturepath):
         texturename = os.path.basename(texturepath)
         texturenameroot, ext = os.path.splitext(texturename)
-        plistname = os.path.dirname(texturepath) + texturenameroot + '.plist'
+        plistname = os.path.dirname(texturepath) + '/' + texturenameroot + '.plist'
 
         doc = xml.dom.minidom.Document()
 
