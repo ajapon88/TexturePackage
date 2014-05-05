@@ -257,7 +257,7 @@ def texturepackage(pakimglist, outputtex, outputplist):
 #        packtexture.exportTexture('export%d.png'%len(imglist))
 
     packtexture.exportTexture(outputtex)
-    packtexture.exportPlist(outputplist, outputtex)
+    packtexture.exportPlist(outputplist, os.path.basename(outputtex))
 
 """ usage """
 def usage():
