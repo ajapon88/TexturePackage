@@ -1,2 +1,2 @@
-texturepackage.py images\*.png export.png
+texturepackage.py images\*.png atlas.png
 pause

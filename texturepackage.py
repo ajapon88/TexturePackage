@@ -196,11 +196,7 @@ class PackTexture:
 
 
     """ plist作成 """
-    def exportPlist(self, texturepath):
-        texturename = os.path.basename(texturepath)
-        texturenameroot, ext = os.path.splitext(texturename)
-        plistname = os.path.dirname(texturepath) + '/' + texturenameroot + '.plist'
-
+    def exportPlist(self, plistpath, texturename):
         doc = xml.dom.minidom.Document()
 
         plist = doc.createElement('plist')
@@ -216,7 +212,7 @@ class PackTexture:
         self.addElemKeyElement(rootdict, 'frames', frames)
         self.addElemKeyElement(rootdict, 'metadata', self.createMetadataDict(texturename))
 
-        f = open(plistname, 'w')
+        f = open(plistpath, 'w')
         f.write(doc.toprettyxml('    ', '\n', 'utf-8'))
         f.close()
 
@@ -232,7 +228,7 @@ def lessImageSize(a, b):
     return 0
 
 """ テクスチャパック """
-def texturepackage(pakimglist, output):
+def texturepackage(pakimglist, outputtex, outputplist):
     imglist = []
     for imgname in pakimglist:
         try:
@@ -260,8 +256,8 @@ def texturepackage(pakimglist, output):
             imglist.pop(0)
 #        packtexture.exportTexture('export%d.png'%len(imglist))
 
-    packtexture.exportTexture(output)
-    packtexture.exportPlist(output)
+    packtexture.exportTexture(outputtex)
+    packtexture.exportPlist(outputplist, outputtex)
 
 """ usage """
 def usage():
@@ -272,7 +268,7 @@ if __name__ == '__main__':
     argv.pop(0)
     argc = len(argv)
     if (argc > 1):
-        output = argv[argc-1]
+        output = os.path.abspath(argv[argc-1])
         argv.pop(argc-1)
         files = []
         for f in argv:
@@ -281,13 +277,25 @@ if __name__ == '__main__':
             print 'No input files.'
             exit(1)
         print 'Input %d files.' % len(files)
-        if (open(output, 'w')):
-            t0 = time.time()
-            texturepackage(files, output)
-            print 'Process time:%ssec' % round(time.time()-t0, 3)
-        else:
-            print 'Output file open error. \'%s\'' % output
+        outputfile = os.path.basename(output)
+        outputfilebase, ext = os.path.splitext(outputfile)
+        if ext == '':
+            ext = '.png'
+        outputbase = os.path.dirname(output) + os.sep + outputfilebase
+        outputtex = outputbase + ext
+        outputplist = outputbase + '.plist'
+        if (not open(outputtex, 'w')):
+            print 'Output file open error. \'%s\'' % outputtex
             exit(1)
+        elif (not open(outputplist, 'w')):
+            print 'Output file open error. \'%s\'' % outputplist
+            exit(1)
+        else:
+            t0 = time.time()
+            texturepackage(files, outputtex, outputplist)
+            print 'Output texture path \'%s\'' % outputtex
+            print 'Output plist path \'%s\'' % outputplist
+            print 'Process time:%ssec' % round(time.time()-t0, 3)
     else:
         usage()
 
